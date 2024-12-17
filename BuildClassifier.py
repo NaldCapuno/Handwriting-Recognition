@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import glob
 import os
 
 Resize_Image_Width = 28
@@ -13,18 +14,18 @@ intClassifications = []
 dataset_folder = "dataset"
 
 for i, char in enumerate(char_digits):
-    digit_folder = os.path.join(dataset_folder, str(i), "JPEG")
+    digit_folder = os.path.join(dataset_folder, str(i), str(i))
 
     if not os.path.exists(digit_folder):
+        print(f"Warning: Folder {digit_folder} does not exist.")
         continue
 
-    image_files = [f for f in os.listdir(digit_folder) if f.endswith('.jpg')]
-
+    image_files = glob.glob(os.path.join(digit_folder, '*.png'))
     for image_file in image_files:
-        image_path = os.path.join(digit_folder, image_file)
-        imageTraining = cv2.imread(image_path)
-
+        imageTraining = cv2.imread(image_file)
+        
         if imageTraining is None:
+            print(f"Error: Unable to read image {image_file}")
             continue
 
         imagGray = cv2.cvtColor(imageTraining, cv2.COLOR_BGR2GRAY)
@@ -34,10 +35,15 @@ for i, char in enumerate(char_digits):
         imgContours = sorted(imgContours, key=cv2.contourArea, reverse=True)
 
         for contour in imgContours[:1]:
-            if cv2.contourArea(contour) > 10:
+            if cv2.contourArea(contour) > 200:
                 x, y, w, h = cv2.boundingRect(contour)
-                imgROI = imgThresh[y:y + h, x:x + w]
-                imgResizedRoi = cv2.resize(imgROI, (Resize_Image_Width, Resize_Image_Height))
+
+                imgROI = imgThresh[y-2:y + h - 2, x-2:x + w - 2]
+
+                if imgROI.shape[1] == Resize_Image_Width and imgROI.shape[0] == Resize_Image_Height:
+                    imgResizedRoi = imgROI
+                else:
+                    imgResizedRoi = cv2.resize(imgROI, (Resize_Image_Width, Resize_Image_Height))
 
                 intClassifications.append(char)
                 flattenedImage = imgResizedRoi.reshape((1, Resize_Image_Width * Resize_Image_Height))
@@ -47,5 +53,6 @@ fltClassifications = np.array(intClassifications, np.float32)
 fltClassifications = fltClassifications.reshape((fltClassifications.size, 1))
 
 print("Training Complete")
+
 np.savetxt("classifications.txt", fltClassifications)
 np.savetxt("flatCharImages.txt", flattenedImages)

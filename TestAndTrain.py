@@ -11,7 +11,7 @@ charClassifications = charClassifications.reshape((charClassifications.size, 1))
 knn = cv2.ml.KNearest_create()
 knn.train(flatCharImages, cv2.ml.ROW_SAMPLE, charClassifications)
 
-imgTestSample = cv2.imread("test/tests.jpg")
+imgTestSample = cv2.imread("test/test copy.jpg")
 if imgTestSample is None:
     print("Error: Test image not found.")
     exit()
@@ -28,14 +28,20 @@ strFinalString = ""
 
 for c in contours:
     if cv2.contourArea(c) > 200:
-        [intX, intY, intW, intH] = cv2.boundingRect(c)
+        intX, intY, intW, intH = cv2.boundingRect(c)
+
         cv2.rectangle(imgTestSample, (intX, intY), (intX + intW, intY + intH), (0, 255, 0), 2)
 
-        imgChar = th[intY+2:intY + intH - 2, intX + 2:intX + intW - 2]
-        imgROIResized = cv2.resize(imgChar, (RESIZED_IMAGE_WIDTH, RESIZED_IMAGE_HEIGHT))
-        finalResized = imgROIResized.reshape((1, RESIZED_IMAGE_WIDTH * RESIZED_IMAGE_HEIGHT)).astype(np.float32)
+        imgChar = th[intY-2:intY + intH - 2, intX-2:intX + intW - 2]
 
+        if imgChar.shape[1] == RESIZED_IMAGE_WIDTH and imgChar.shape[0] == RESIZED_IMAGE_HEIGHT:
+            imgROIResized = imgChar
+        else:
+            imgROIResized = cv2.resize(imgChar, (RESIZED_IMAGE_WIDTH, RESIZED_IMAGE_HEIGHT))
+
+        finalResized = imgROIResized.reshape((1, RESIZED_IMAGE_WIDTH * RESIZED_IMAGE_HEIGHT)).astype(np.float32)
         _, results, _, _ = knn.findNearest(finalResized, k=1)
+
         currentChar = chr(int(results[0][0]))
         strFinalString += currentChar
 
@@ -46,6 +52,6 @@ print("Recognized String: ", strFinalString)
 cv2.imshow("Processed Image", imgTestSample)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-f = open("results.txt", "w")
-f.write(strFinalString)
-f.close
+
+with open("results.txt", "w") as f:
+    f.write(strFinalString)
