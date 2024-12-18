@@ -20,7 +20,7 @@ for i, char in enumerate(char_digits):
         print(f"Warning: Folder {digit_folder} does not exist.")
         continue
 
-    image_files = glob.glob(os.path.join(digit_folder, '*.png'))
+    image_files = glob.glob(os.path.join(digit_folder, '*.jpg'))
     for image_file in image_files:
         imageTraining = cv2.imread(image_file)
         
