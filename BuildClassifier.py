@@ -3,8 +3,8 @@ import cv2
 import glob
 import os
 
-Resize_Image_Width = 28
-Resize_Image_Height = 28
+Resize_Image_Width = 90
+Resize_Image_Height = 140
 
 char_digits = list(range(48, 58))
 
@@ -35,15 +35,10 @@ for i, char in enumerate(char_digits):
         imgContours = sorted(imgContours, key=cv2.contourArea, reverse=True)
 
         for contour in imgContours[:1]:
-            if cv2.contourArea(contour) > 200:
+            if cv2.contourArea(contour) > 10:
                 x, y, w, h = cv2.boundingRect(contour)
-
-                imgROI = imgThresh[y-2:y + h - 2, x-2:x + w - 2]
-
-                if imgROI.shape[1] == Resize_Image_Width and imgROI.shape[0] == Resize_Image_Height:
-                    imgResizedRoi = imgROI
-                else:
-                    imgResizedRoi = cv2.resize(imgROI, (Resize_Image_Width, Resize_Image_Height))
+                imgROI = imgThresh[y:y + h, x:x + w]
+                imgResizedRoi = cv2.resize(imgROI, (Resize_Image_Width, Resize_Image_Height))
 
                 intClassifications.append(char)
                 flattenedImage = imgResizedRoi.reshape((1, Resize_Image_Width * Resize_Image_Height))
