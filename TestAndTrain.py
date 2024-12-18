@@ -34,7 +34,7 @@ for c in contours:
             pass
         else:
             [intX, intY, IntW, intH] = cv2.boundingRect(approx)
-            cv2.rectangle(imgTestSample, (intX, intY), (intX + IntW, intY + intH), (0, 255, 0), 2)
+            cv2.rectangle(imgTestSample, (intX, intY), (intX + IntW, intY + intH), (0, 255, 0), 3)
             imgchar = th[intY:intY + intH, intX:intX + IntW]
             imgchar = imgchar[5:130, 5:80]
 
